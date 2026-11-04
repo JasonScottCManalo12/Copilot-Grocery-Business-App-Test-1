@@ -39,12 +39,16 @@ These interfaces should use consistent shared records for products, transactions
 |---|---|---|
 | GitHub repository | **Available** | This repository |
 | Planning documents | **Copied** | PROJECT_BREAKDOWN.md + PROJECT_STATUS.md |
-| Flutter project foundation | **In progress** | Clean bootstrap started 2026-11-04 |
-| Android CI workflow | **Pending** | Will be added |
-| Grocery product and inventory features | **Not implemented** | Starting now |
-| Offline POS and sales recording | **Not implemented** | |
-| SQLite persistence | **Not implemented** | First priority |
-| Automated feature tests | **Not verified** | |
+| Flutter project foundation | **Done** | Clean structure + theme |
+| Product model | **Done** | `lib/data/models/product.dart` |
+| SQLite database | **Done** | `lib/data/database/app_database.dart` (v1 schema) |
+| Product repository | **Done** | Full CRUD + search + low-stock |
+| Product Catalogue UI | **Done** | List + Add/Edit form |
+| Android CI workflow | **Configured** | `.github/workflows/build-android.yml` |
+| Offline POS and sales recording | **Not implemented** | Next priority |
+| Inventory movements history | **Not implemented** | |
+| Transaction recording | **Not implemented** | |
+| Automated feature tests | **Basic only** | Widget smoke test |
 | Web and desktop delivery | **Not started** | |
 | Crypto-related modules | **Deferred** | Do not block MVP |
 
@@ -54,29 +58,28 @@ These interfaces should use consistent shared records for products, transactions
 
 - [x] GitHub repository exists.
 - [x] Planning documents in place.
-- [ ] Clean Flutter foundation with proper structure.
-- [ ] SQLite + repository layer.
-- [ ] Android CI workflow.
+- [x] Clean Flutter foundation with proper structure.
+- [x] SQLite + repository layer.
+- [x] Android CI workflow.
 
 ### Milestone 1 — Traditional grocery MVP (Android-first)
 
-- [ ] Product catalogue: create, view, edit, and deactivate products.
-- [ ] Inventory quantity and stock adjustments.
-- [ ] Offline SQLite database and persistence.
+- [x] Product catalogue: create, view, edit, and deactivate products.
+- [x] Basic low-stock visibility.
+- [ ] Inventory quantity and stock adjustments (UI + history).
+- [x] Offline SQLite database and persistence.
 - [ ] POS cart: add/remove items and change quantities.
 - [ ] Calculate subtotal, totals, payment received, and change.
 - [ ] Complete a sale and save a transaction record.
 - [ ] Basic receipt / transaction history.
-- [ ] Basic low-stock visibility.
 - [ ] Validate core flows with automated tests and a real-device APK.
 
 ## 4. Next recommended actions
 
-1. Establish clean folder structure and core models.
-2. Implement SQLite database layer.
-3. Build Product Catalogue (M1.1).
-4. Add Inventory (M1.2).
-5. Build Basic POS (M1.3).
+1. Add stock adjustment UI + stock movement history table.
+2. Build Basic POS (cart + payment).
+3. Implement sales transactions + history.
+4. Add more unit/widget tests.
 
 ## 5. Update protocol
 
