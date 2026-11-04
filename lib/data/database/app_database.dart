@@ -24,7 +24,7 @@ class AppDatabase {
       path,
       version: AppConstants.dbVersion,
       onCreate: _onCreate,
-      onUpgrade: _on recapUpgrade,
+      onUpgrade: _onUpgrade,
     );
   }
 
