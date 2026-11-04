@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/product.dart';
 import '../../../data/repositories/product_repository.dart';
+import '../../inventory/screens/stock_adjustment_screen.dart';
+import '../../inventory/screens/stock_history_screen.dart';
 import 'product_form_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -74,12 +76,37 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
+  Future<void> _openStockAdjustment(Product product) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StockAdjustmentScreen(product: product),
+      ),
+    );
+    if (result == true) {
+      await _loadProducts();
+    }
+  }
+
+  void _openStockHistory({Product? product}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StockHistoryScreen(
+          productId: product?.id,
+          productName: product?.name,
+        ),
+      ),
+    );
+  }
+
   Future<void> _deactivateProduct(Product product) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Deactivate Product'),
-        content: Text('Deactivate "${product.name}"? It will be hidden from the catalogue.'),
+        content: Text(
+            'Deactivate "${product.name}"? It will be hidden from the catalogue.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -104,12 +131,62 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
+  void _showProductActions(Product product) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Product'),
+              onTap: () {
+                Navigator.pop(context);
+                _openForm(product: product);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_box_outlined),
+              title: const Text('Stock In / Out / Adjust'),
+              onTap: () {
+                Navigator.pop(context);
+                _openStockAdjustment(product);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Stock History'),
+              onTap: () {
+                Navigator.pop(context);
+                _openStockHistory(product: product);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.visibility_off, color: Colors.red),
+              title: const Text('Deactivate'),
+              onTap: () {
+                Navigator.pop(context);
+                _deactivateProduct(product);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'All stock history',
+            onPressed: () => _openStockHistory(),
+          ),
           IconButton(
             icon: Icon(
               _showLowStockOnly ? Icons.warning : Icons.warning_amber_outlined,
@@ -192,7 +269,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                             title: Text(
                               product.name,
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
                             ),
                             subtitle: Text(
                               '${product.category} • ${product.stockQuantity.toStringAsFixed(product.stockQuantity.truncateToDouble() == product.stockQuantity ? 0 : 2)} ${product.unit}',
@@ -218,8 +296,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                   ),
                               ],
                             ),
-                            onTap: () => _openForm(product: product),
-                            onLongPress: () => _deactivateProduct(product),
+                            onTap: () => _showProductActions(product),
+                            onLongPress: () => _openStockAdjustment(product),
                           );
                         },
                       ),

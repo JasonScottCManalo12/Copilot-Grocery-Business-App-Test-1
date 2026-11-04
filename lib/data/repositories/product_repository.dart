@@ -1,8 +1,14 @@
 import '../database/app_database.dart';
 import '../models/product.dart';
+import '../models/stock_movement.dart';
+import '../../core/constants/app_constants.dart';
 
 class ProductRepository {
   final AppDatabase _db = AppDatabase.instance;
+
+  // ─────────────────────────────────────────────
+  // Product CRUD
+  // ─────────────────────────────────────────────
 
   Future<int> insert(Product product) async {
     final db = await _db.database;
@@ -78,13 +84,12 @@ class ProductRepository {
     return maps.map((map) => Product.fromMap(map)).toList();
   }
 
-  Future<List<Product>> getByCategory(String category, {bool activeOnly = true}) async {
+  Future<List<Product>> getByCategory(String category,
+      {bool activeOnly = true}) async {
     final db = await _db.database;
     final maps = await db.query(
       'products',
-      where: activeOnly
-          ? 'category = ? AND is_active = ?'
-          : 'category = ?',
+      where: activeOnly ? 'category = ? AND is_active = ?' : 'category = ?',
       whereArgs: activeOnly ? [category, 1] : [category],
       orderBy: 'name COLLATE NOCASE ASC',
     );
@@ -101,26 +106,135 @@ class ProductRepository {
     return maps.map((map) => Product.fromMap(map)).toList();
   }
 
-  Future<int> updateStock(int productId, double newQuantity) async {
-    final db = await _db.database;
-    return await db.update(
-      'products',
-      {
-        'stock_quantity': newQuantity,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [productId],
+  // ─────────────────────────────────────────────
+  // Stock Operations (with movement history)
+  // ─────────────────────────────────────────────
+
+  /// Stock In - increases stock
+  Future<void> stockIn({
+    required int productId,
+    required double quantity,
+    String? reason,
+    String? reference,
+  }) async {
+    await _applyStockChange(
+      productId: productId,
+      quantity: quantity,
+      type: AppConstants.movementStockIn,
+      reason: reason,
+      reference: reference,
     );
   }
 
-  Future<int> adjustStock(int productId, double delta) async {
+  /// Stock Out - decreases stock
+  Future<void> stockOut({
+    required int productId,
+    required double quantity,
+    String? reason,
+    String? reference,
+  }) async {
+    await _applyStockChange(
+      productId: productId,
+      quantity: -quantity,
+      type: AppConstants.movementStockOut,
+      reason: reason,
+      reference: reference,
+    );
+  }
+
+  /// Manual adjustment to a specific quantity
+  Future<void> adjustStock({
+    required int productId,
+    required double newQuantity,
+    String? reason,
+  }) async {
+    final product = await getById(productId);
+    if (product == null) throw Exception('Product not found');
+
+    final delta = newQuantity - product.stockQuantity;
+    await _applyStockChange(
+      productId: productId,
+      quantity: delta,
+      type: AppConstants.movementAdjustment,
+      reason: reason,
+      absoluteNewStock: newQuantity,
+    );
+  }
+
+  Future<void> _applyStockChange({
+    required int productId,
+    required double quantity, // can be negative
+    required String type,
+    String? reason,
+    String? reference,
+    double? absoluteNewStock,
+  }) async {
     final db = await _db.database;
-    return await db.rawUpdate('''
-      UPDATE products
-      SET stock_quantity = stock_quantity + ?,
-          updated_at = ?
-      WHERE id = ?
-    ''', [delta, DateTime.now().toIso8601String(), productId]);
+
+    await db.transaction((txn) async {
+      final maps = await txn.query(
+        'products',
+        where: 'id = ?',
+        whereArgs: [productId],
+      );
+      if (maps.isEmpty) throw Exception('Product not found');
+
+      final product = Product.fromMap(maps.first);
+      final previous = product.stockQuantity;
+      final newStock = absoluteNewStock ?? (previous + quantity);
+
+      if (newStock < 0) {
+        throw Exception('Stock cannot go below zero');
+      }
+
+      // Update product stock
+      await txn.update(
+        'products',
+        {
+          'stock_quantity': newStock,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [productId],
+      );
+
+      // Record movement
+      final movement = StockMovement(
+        productId: productId,
+        productName: product.name,
+        type: type,
+        quantity: quantity.abs(),
+        previousStock: previous,
+        newStock: newStock,
+        reason: reason,
+        reference: reference,
+        createdAt: DateTime.now(),
+      );
+
+      await txn.insert('stock_movements', movement.toMap());
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // Stock Movement History
+  // ─────────────────────────────────────────────
+
+  Future<List<StockMovement>> getMovements({
+    int? productId,
+    int limit = 100,
+  }) async {
+    final db = await _db.database;
+    final maps = await db.query(
+      'stock_movements',
+      where: productId != null ? 'product_id = ?' : null,
+      whereArgs: productId != null ? [productId] : null,
+      orderBy: 'created_at DESC',
+      limit: limit,
+    );
+    return maps.map((m) => StockMovement.fromMap(m)).toList();
+  }
+
+  Future<List<StockMovement>> getRecentMovements({int limit = 50}) async {
+    return getMovements(limit: limit);
   }
 }

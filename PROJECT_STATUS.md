@@ -41,13 +41,16 @@ These interfaces should use consistent shared records for products, transactions
 | Planning documents | **Copied** | PROJECT_BREAKDOWN.md + PROJECT_STATUS.md |
 | Flutter project foundation | **Done** | Clean structure + theme |
 | Product model | **Done** | `lib/data/models/product.dart` |
-| SQLite database | **Done** | `lib/data/database/app_database.dart` (v1 schema) |
-| Product repository | **Done** | Full CRUD + search + low-stock |
+| SQLite database | **Done** | v2 schema (products + stock_movements) |
+| Product repository | **Done** | Full CRUD + search + low-stock + stock ops |
 | Product Catalogue UI | **Done** | List + Add/Edit form |
+| Stock movements table | **Done** | Full history tracking |
+| Stock In / Out / Adjust | **Done** | UI + transactional updates |
+| Stock History screen | **Done** | Per-product and global |
 | Android CI workflow | **Configured** | `.github/workflows/build-android.yml` |
-| Offline POS and sales recording | **Not implemented** | Next priority |
-| Inventory movements history | **Not implemented** | |
-| Transaction recording | **Not implemented** | |
+| Offline POS and sales recording | **Not implemented** | **Next priority** |
+| Sales transactions | **Not implemented** | |
+| Transaction History | **Not implemented** | |
 | Automated feature tests | **Basic only** | Widget smoke test |
 | Web and desktop delivery | **Not started** | |
 | Crypto-related modules | **Deferred** | Do not block MVP |
@@ -66,7 +69,7 @@ These interfaces should use consistent shared records for products, transactions
 
 - [x] Product catalogue: create, view, edit, and deactivate products.
 - [x] Basic low-stock visibility.
-- [ ] Inventory quantity and stock adjustments (UI + history).
+- [x] Inventory quantity and stock adjustments (UI + history).
 - [x] Offline SQLite database and persistence.
 - [ ] POS cart: add/remove items and change quantities.
 - [ ] Calculate subtotal, totals, payment received, and change.
@@ -76,10 +79,10 @@ These interfaces should use consistent shared records for products, transactions
 
 ## 4. Next recommended actions
 
-1. Add stock adjustment UI + stock movement history table.
-2. Build Basic POS (cart + payment).
-3. Implement sales transactions + history.
-4. Add more unit/widget tests.
+1. **Build Basic POS** (cart + payment + complete sale).
+2. Create sales transaction model + table.
+3. Link POS completion to stock deduction + movement history.
+4. Transaction history + simple receipt screen.
 
 ## 5. Update protocol
 

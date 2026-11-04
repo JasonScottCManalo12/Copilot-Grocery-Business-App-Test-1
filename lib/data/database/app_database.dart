@@ -48,17 +48,43 @@ class AppDatabase {
       )
     ''');
 
-    // Indexes for common queries
     await db.execute('CREATE INDEX idx_products_name ON products(name)');
     await db.execute('CREATE INDEX idx_products_category ON products(category)');
     await db.execute('CREATE INDEX idx_products_is_active ON products(is_active)');
     await db.execute('CREATE INDEX idx_products_barcode ON products(barcode)');
+
+    await _createStockMovementsTable(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Future migrations go here
-    // Example:
-    // if (oldVersion < 2) { ... }
+    if (oldVersion < 2) {
+      await _createStockMovementsTable(db);
+    }
+  }
+
+  Future<void> _createStockMovementsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE stock_movements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        product_name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        previous_stock REAL NOT NULL,
+        new_stock REAL NOT NULL,
+        reason TEXT,
+        reference TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (product_id) REFERENCES products (id)
+      )
+    ''');
+
+    await db.execute(
+        'CREATE INDEX idx_stock_movements_product ON stock_movements(product_id)');
+    await db.execute(
+        'CREATE INDEX idx_stock_movements_created ON stock_movements(created_at)');
+    await db.execute(
+        'CREATE INDEX idx_stock_movements_type ON stock_movements(type)');
   }
 
   Future<void> close() async {
