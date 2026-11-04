@@ -39,21 +39,20 @@ These interfaces should use consistent shared records for products, transactions
 |---|---|---|
 | GitHub repository | **Available** | This repository |
 | Planning documents | **Copied** | PROJECT_BREAKDOWN.md + PROJECT_STATUS.md |
-| Flutter project foundation | **Done** | Clean structure + theme |
-| Product model | **Done** | `lib/data/models/product.dart` |
-| SQLite database | **Done** | v2 schema (products + stock_movements) |
-| Product repository | **Done** | Full CRUD + search + low-stock + stock ops |
-| Product Catalogue UI | **Done** | List + Add/Edit form |
-| Stock movements table | **Done** | Full history tracking |
-| Stock In / Out / Adjust | **Done** | UI + transactional updates |
-| Stock History screen | **Done** | Per-product and global |
-| Android CI workflow | **Configured** | `.github/workflows/build-android.yml` |
-| Offline POS and sales recording | **Not implemented** | **Next priority** |
-| Sales transactions | **Not implemented** | |
-| Transaction History | **Not implemented** | |
-| Automated feature tests | **Basic only** | Widget smoke test |
-| Web and desktop delivery | **Not started** | |
-| Crypto-related modules | **Deferred** | Do not block MVP |
+| Flutter project foundation | **Done** | Clean structure + theme + bottom nav |
+| Product model + Catalogue | **Done** | Full CRUD + search + low-stock |
+| SQLite database | **Done** | v3 schema (products + stock_movements + sales + sale_items) |
+| Stock In / Out / Adjust | **Done** | + full movement history |
+| **Basic POS** | **Done** | Product grid, cart, quantity controls |
+| **Payment screen** | **Done** | Cash + GCash/Maya/Card, change calculation |
+| **Sales Transactions** | **Done** | Transaction ID, items, payment, change |
+| **Stock deduction on sale** | **Done** | Atomic with movement record |
+| **Sales History** | **Done** | List + today total + receipt view |
+| Android CI workflow | **Configured** | |
+| Receipt / share | Basic on-screen | Can enhance later |
+| Automated feature tests | Basic only | |
+| Web / Desktop | Not started | |
+| Crypto modules | Deferred | |
 
 ## 3. Master checklist
 
@@ -71,18 +70,19 @@ These interfaces should use consistent shared records for products, transactions
 - [x] Basic low-stock visibility.
 - [x] Inventory quantity and stock adjustments (UI + history).
 - [x] Offline SQLite database and persistence.
-- [ ] POS cart: add/remove items and change quantities.
-- [ ] Calculate subtotal, totals, payment received, and change.
-- [ ] Complete a sale and save a transaction record.
-- [ ] Basic receipt / transaction history.
+- [x] POS cart: add/remove items and change quantities.
+- [x] Calculate subtotal, totals, payment received, and change.
+- [x] Complete a sale and save a transaction record.
+- [x] Basic receipt / transaction history.
 - [ ] Validate core flows with automated tests and a real-device APK.
 
 ## 4. Next recommended actions
 
-1. **Build Basic POS** (cart + payment + complete sale).
-2. Create sales transaction model + table.
-3. Link POS completion to stock deduction + movement history.
-4. Transaction history + simple receipt screen.
+1. Test the full flow on a real device / emulator: Product → Stock → POS → Payment → History.
+2. Add more robust input validation and edge-case handling.
+3. Improve receipt (printable / shareable).
+4. Add simple daily summary on home/POS.
+5. Write widget/integration tests for the core sale flow.
 
 ## 5. Update protocol
 

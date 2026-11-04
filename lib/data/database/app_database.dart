@@ -24,7 +24,7 @@ class AppDatabase {
       path,
       version: AppConstants.dbVersion,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      onUpgrade: _on recapUpgrade,
     );
   }
 
@@ -54,11 +54,15 @@ class AppDatabase {
     await db.execute('CREATE INDEX idx_products_barcode ON products(barcode)');
 
     await _createStockMovementsTable(db);
+    await _createSalesTables(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await _createStockMovementsTable(db);
+    }
+    if (oldVersion < 3) {
+      await _createSalesTables(db);
     }
   }
 
@@ -85,6 +89,43 @@ class AppDatabase {
         'CREATE INDEX idx_stock_movements_created ON stock_movements(created_at)');
     await db.execute(
         'CREATE INDEX idx_stock_movements_type ON stock_movements(type)');
+  }
+
+  Future<void> _createSalesTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE sales (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transaction_id TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL,
+        subtotal REAL NOT NULL,
+        discount REAL NOT NULL DEFAULT 0.0,
+        total REAL NOT NULL,
+        payment_method TEXT NOT NULL,
+        amount_received REAL NOT NULL,
+        change_amount REAL NOT NULL,
+        status TEXT NOT NULL DEFAULT 'completed',
+        notes TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE sale_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sale_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        product_name TEXT NOT NULL,
+        unit TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        unit_price REAL NOT NULL,
+        subtotal REAL NOT NULL,
+        FOREIGN KEY (sale_id) REFERENCES sales (id),
+        FOREIGN KEY (product_id) REFERENCES products (id)
+      )
+    ''');
+
+    await db.execute('CREATE INDEX idx_sales_created ON sales(created_at)');
+    await db.execute('CREATE INDEX idx_sales_transaction ON sales(transaction_id)');
+    await db.execute('CREATE INDEX idx_sale_items_sale ON sale_items(sale_id)');
   }
 
   Future<void> close() async {

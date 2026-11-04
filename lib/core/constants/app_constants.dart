@@ -1,7 +1,7 @@
 class AppConstants {
   static const String appName = 'Grocery Business App';
   static const String dbName = 'grocery_business.db';
-  static const int dbVersion = 2; // bumped for stock_movements table
+  static const int dbVersion = 3; // bumped for sales tables
 
   // Product
   static const List<String> productUnits = [
@@ -44,5 +44,20 @@ class AppConstants {
     movementAdjustment,
     movementSale,
     movementReturn,
+  ];
+
+  // Payment methods
+  static const String paymentCash = 'cash';
+  static const String paymentGCash = 'gcash';
+  static const String paymentMaya = 'maya';
+  static const String paymentCard = 'card';
+  static const String paymentOther = 'other';
+
+  static const List<String> paymentMethods = [
+    paymentCash,
+    paymentGCash,
+    paymentMaya,
+    paymentCard,
+    paymentOther,
   ];
 }
